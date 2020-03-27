@@ -3,10 +3,9 @@ package com.blhx.book_managers.model;
 import lombok.Data;
 
 @Data
-public class Book {
+public class User {
     private int id;
     private String name;
-    private String author;
-    private String price;
-    private int status;
+    private String email;
+    private String password;
 }
