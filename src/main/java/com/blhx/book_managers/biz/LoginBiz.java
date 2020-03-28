@@ -28,7 +28,7 @@ public class LoginBiz {
      * @return 返回最新t票
      * @throws Exception 账号密码错误
      */
-    public String login(String email,String password) throws Exception{
+    public String login(String email,String password) {
         User user=userService.getUser(email);
         //登录信息检查
         if (user ==null)
@@ -59,6 +59,7 @@ public class LoginBiz {
     public void logout(String t){
         ticketService.deleteTicket(t);
     }
+
     /**
      * 注册一个用户，并返回用户t票
      *
@@ -66,21 +67,24 @@ public class LoginBiz {
      */
     public String register(User user) throws Exception{
 //        信息检查
-        if (userService.getUser(user.getEmail())!=null){
-            throw new LoginReginisterException("该邮箱已经存在");
-        }
-//        加密密码
-        String s=user.getPassword();
-        String md5=MD5.next(s);
-        user.setPassword(md5);
-        userService.addUser(user);
+      if (userService.getUser(user.getEmail()) != null) {
+        throw new LoginReginisterException("用户邮箱已经存在！");
+      }
 
-//        生成用户ticket
-        Ticket t=ticketService.getTicket(user.getId());
-//        向数据库添加ticket
-         ticketService.addTicket(t);
-         ConcurrentUtils.setHost(user);
+      //密码加密
+      String plain = user.getPassword();
+      String md5 = MD5.next(plain);
+      user.setPassword(md5);
+      //数据库添加用户
+      userService.addUser(user);
 
-         return t.getTicket();
+      //生成用户t票
+      Ticket ticket = TicketUtils.next(user.getId());
+      //数据库添加t票
+      ticketService.addTicket(ticket);
+
+      ConcurrentUtils.setHost(user);
+      return ticket.getTicket();
+
     }
 }

@@ -2,6 +2,7 @@ package com.blhx.book_managers.controllers;
 
 import com.blhx.book_managers.biz.LoginBiz;
 import com.blhx.book_managers.model.User;
+import com.blhx.book_managers.service.UserService;
 import com.blhx.book_managers.utils.CookieUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,52 +15,68 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginController {
     @Autowired
     private LoginBiz loginBiz;
-    @Autowired
 
-    @GetMapping("/users/register")
-    public String register(){
+    @Autowired
+    private UserService userService;
+
+    @RequestMapping(path = {"/users/register"}, method = {RequestMethod.GET})
+    public String register() {
         return "login/register";
     }
+
     @RequestMapping(path = {"/users/register/do"}, method = {RequestMethod.POST})
-    public String doRegister(@RequestParam("email") String email
-            , @RequestParam("password") String password
-            , @RequestParam("name") String name
-            , HttpServletResponse response, Model model ){
-        User user=new User();
+    public String doRegister(
+            Model model,
+            HttpServletResponse response,
+            @RequestParam("name") String name,
+            @RequestParam("email") String email,
+            @RequestParam("password") String password
+    ) {
+
+        User user = new User();
         user.setName(name);
-        user.setPassword(password);
         user.setEmail(email);
+        user.setPassword(password);
+
         try {
-            String t=loginBiz.register(user);
-            CookieUtils.writeCookie("t",t,response);
+            String t = loginBiz.register(user);
+            CookieUtils.writeCookie("t", t, response);
             return "redirect:/index";
         } catch (Exception e) {
-            model.addAttribute("error",e.getMessage());
+            model.addAttribute("error", e.getMessage());
             return "404";
         }
-
     }
-    @GetMapping("/users/login")
-    public String login(){
+
+    @RequestMapping(path = {"/users/login"}, method = {RequestMethod.GET})
+    public String login() {
         return "login/login";
     }
-    @RequestMapping(path = {"/users/login/do"}, method = {RequestMethod.POST})
-    public   String dologin( @RequestParam("email") String email
-                            , @RequestParam("password") String password
-                            , HttpServletResponse response, Model model ){
 
+    @RequestMapping(path = {"/users/login/do"}, method = {RequestMethod.POST})
+    public String doLogin(
+            Model model,
+            HttpServletResponse response,
+            @RequestParam("email") String email,
+            @RequestParam("password") String password
+    ) {
         try {
-            String t=loginBiz.login(email, password);
-            CookieUtils.writeCookie("t",t,response);
+            String t = loginBiz.login(email, password);
+            CookieUtils.writeCookie("t", t, response);
             return "redirect:/index";
         } catch (Exception e) {
-            model.addAttribute("error",e.getMessage());
+            model.addAttribute("error", e.getMessage());
             return "404";
         }
     }
-    @GetMapping("/users/logout/do")
-    public String logout(@CookieValue("t") String t){
+
+    @RequestMapping(path = {"/users/logout/do"}, method = {RequestMethod.GET})
+    public String doLogout(
+            @CookieValue("t") String t
+    ) {
+
         loginBiz.logout(t);
         return "redirect:/index";
+
     }
 }
